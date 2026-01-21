@@ -1,6 +1,6 @@
 // ==================== CONFIGURATION ====================
 const CONFIG = {
-    API_BASE_URL: 'http://localhost:8000',
+    API_BASE_URL: 'https://28c6c33b206f.ngrok-free.app',
     MAX_FILE_SIZE: 10 * 1024 * 1024, // 10MB
     MAX_MESSAGE_LENGTH: 2000,
     TOAST_DURATION: 4000,
