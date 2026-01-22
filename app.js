@@ -663,4 +663,3 @@ if (document.readyState === 'loading') {
 
 // Log for debugging
 console.log('📚 Smart Tutor AI - Frontend Loaded');
-console.log('🔗 API Base URL:', CONFIG.API_BASE_URL);
