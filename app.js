@@ -133,25 +133,20 @@ async function initializeSession() {
         let sessionId = sessionStorage.getItem(CONFIG.SESSION_STORAGE_KEY);
         
         if (!sessionId) {
-            // Use 'res' consistently
-            const res = await fetch(`${API_BASE}/session/init`, {
+            // FIX: Changed API_BASE to CONFIG.API_BASE_URL
+            const res = await fetch(`${CONFIG.API_BASE_URL}/session/init`, {
                 method: "POST",
                 headers: {
                     "Content-Type": "application/json",
-                    "ngrok-skip-browser-warning": "true" 
+                    "ngrok-skip-browser-warning": "69420" 
                 }
             });
             
-            // Fix: Changed 'response' to 'res'
-            if (!res.ok) {
-                throw new Error('Failed to initialize session');
-            }
+            if (!res.ok) throw new Error('Failed to initialize session');
             
-            // Fix: Changed 'response' to 'res'
             const data = await res.json();
             sessionId = data.session_id;
             sessionStorage.setItem(CONFIG.SESSION_STORAGE_KEY, sessionId);
-            
             console.log('✅ New session created:', sessionId);
         } else {
             console.log('✅ Existing session loaded:', sessionId);
@@ -162,7 +157,7 @@ async function initializeSession() {
         
     } catch (error) {
         console.error('❌ Session initialization failed:', error);
-        showToast('Failed to connect to server. Please check if the backend is running.', 'error');
+        showToast('Connection failed. Please check if the backend is running.', 'error');
         return null;
     }
 }
@@ -221,7 +216,10 @@ async function sendChatMessage(query) {
             {
                 method: 'GET',
                 headers: {
-                    'session-id': state.sessionId
+                    'session-id': state.sessionId,
+                    // FIX: Added ngrok bypass header for Chat requests
+                    'ngrok-skip-browser-warning': '69420',
+                    'Accept': 'application/json'
                 }
             }
         );
@@ -232,7 +230,6 @@ async function sendChatMessage(query) {
         }
         
         const data = await response.json();
-        console.log('✅ Chat response received:', data);
         return data;
         
     } catch (error) {
