@@ -462,41 +462,57 @@ function scrollToBottom() {
 /**
  * Handle sending message
  */
-async function sendMessage() {
-    const text = chatInput.value.trim();
-    if (!text || chatInput.disabled || !sessionId) return;
-
-    toggleInput(true);
-    appendMsg('user', text);
-    chatInput.value = "";
-
+async function handleSendMessage() {
+    const message = elements.messageInput.value.trim();
+    
+    if (!message || state.isProcessing) return;
+    
+    // Check message length
+    if (message.length > CONFIG.MAX_MESSAGE_LENGTH) {
+        showToast(`Message exceeds ${CONFIG.MAX_MESSAGE_LENGTH} characters`, 'warning');
+        return;
+    }
+    
+    state.isProcessing = true;
+    elements.sendBtn.disabled = true;
+    
+    // Add user message
+    addMessage('user', message);
+    
+    // Clear input
+    elements.messageInput.value = '';
+    autoResizeTextarea(elements.messageInput);
+    updateCharCounter();
+    
+    // Show typing indicator
+    showTypingIndicator();
+    
     try {
-        const res = await fetch(`${API_BASE}/chat?query=${encodeURIComponent(text)}`, {
-            method: "GET",
-            headers: { 
-                "session-id": sessionId,
-                "Accept": "application/json",
-                // THIS IS THE CRITICAL LINE FOR NGROK
-                "ngrok-skip-browser-warning": "69420" 
-            }
-        });
+        // Send message to API
+        const response = await sendChatMessage(message);
         
-        // Safety check: Is it actually JSON?
-        const contentType = res.headers.get("content-type");
-        if (!res.ok || !contentType || !contentType.includes("application/json")) {
-            const errorBody = await res.text();
-            console.error("Non-JSON Response:", errorBody);
-            throw new Error("Server returned an invalid format. Check ngrok warning.");
+        // Remove typing indicator
+        removeTypingIndicator();
+        
+        // Add bot response
+        if (response && response.answer) {
+            addMessage('bot', response.answer, response.context || []);
+        } else {
+            addMessage('bot', 'I apologize, but I couldn\'t generate a response. Please try again.');
         }
         
-        const data = await res.json();
-        appendMsg('tutor', data.answer);
-    } catch (e) {
-        console.error("Chat Error Detail:", e);
-        showToast("AI connection interrupted. Try again.");
-        appendMsg('tutor', "⚠️ Sorry, I encountered an error. Please try again.");
+    } catch (error) {
+        // Remove typing indicator
+        removeTypingIndicator();
+        
+        // Show error message
+        addMessage('bot', '⚠️ I\'m having trouble connecting to the server. Please check your connection and try again.');
+        showToast('Failed to send message. Please try again.', 'error');
+        
     } finally {
-        toggleInput(false);
+        state.isProcessing = false;
+        elements.sendBtn.disabled = false;
+        elements.messageInput.focus();
     }
 }
 
