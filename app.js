@@ -1,6 +1,6 @@
 // ==================== CONFIGURATION ====================
 const CONFIG = {
-    API_BASE_URL: 'http://127.0.0.1:8000',
+    API_BASE_URL: 'https://1530a510a334.ngrok-free.app',
     MAX_FILE_SIZE: 10 * 1024 * 1024, // 10MB
     MAX_MESSAGE_LENGTH: 2000,
     TOAST_DURATION: 4000,
@@ -130,21 +130,25 @@ function autoResizeTextarea(textarea) {
  */
 async function initializeSession() {
     try {
-        // Check if session exists in sessionStorage (unique per tab)
-        // Using sessionStorage instead of localStorage ensures each tab gets its own session
         let sessionId = sessionStorage.getItem(CONFIG.SESSION_STORAGE_KEY);
         
         if (!sessionId) {
-            // Create new session
-            const response = await fetch(`${CONFIG.API_BASE_URL}/session/init`, {
-                method: 'POST'
+            // Use 'res' consistently
+            const res = await fetch(`${API_BASE}/session/init`, {
+                method: "POST",
+                headers: {
+                    "Content-Type": "application/json",
+                    "ngrok-skip-browser-warning": "true" 
+                }
             });
             
-            if (!response.ok) {
+            // Fix: Changed 'response' to 'res'
+            if (!res.ok) {
                 throw new Error('Failed to initialize session');
             }
             
-            const data = await response.json();
+            // Fix: Changed 'response' to 'res'
+            const data = await res.json();
             sessionId = data.session_id;
             sessionStorage.setItem(CONFIG.SESSION_STORAGE_KEY, sessionId);
             
